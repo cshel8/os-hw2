@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homework 2: Processes and Threads: answers of (no name entered)</title>
+<style>body{font:15px/1.55 system-ui,sans-serif;max-width:860px;margin:24px auto;padding:0 16px;color:#151c2c;background:#fff}h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.15rem;margin:28px 0 8px;border-bottom:2px solid #d9deea;padding-bottom:4px}.meta{color:#69738c;margin:0 0 16px}.a{margin:0 0 14px}.q{margin:0 0 4px;color:#3d4760;font-size:.92rem}pre{white-space:pre-wrap;word-wrap:break-word;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;background:#f5f7fb;border:1px solid #d9deea;border-radius:6px;padding:8px 10px;margin:0}.empty{color:#b45309;margin:0}table{border-collapse:collapse;font:13px ui-monospace,Menlo,Consolas,monospace}th,td{border:1px solid #d9deea;padding:4px 8px;text-align:left}th{background:#f5f7fb}</style>
+</head>
+<body>
+<h1>Homework 2: Processes and Threads</h1>
+<p class="meta">Answers of <b>(no name entered)</b> · saved 10/10/2026, 10:22:03 PM</p>
+<h2>Problem 1Follow five processes through the seven-state model</h2>
+<div class="a"><p class="q">(a) Give the state of every process at each of these times. (Nothing happens at these exact times, so there is no &quot;just before or just after&quot; question.)</p>
+<table><tr><th></th><th>t = 4</th><th>t = 9</th><th>t = 11</th><th>t = 14</th><th>t = 16</th></tr>
+<tr><th>P1</th><td>Blocked</td><td>Blocked/Suspend</td><td>Blocked/Suspend</td><td>Ready</td><td>Ready</td></tr>
+<tr><th>P2</th><td>Running</td><td>Ready</td><td>Ready</td><td>Ready</td><td>Ready</td></tr>
+<tr><th>P3</th><td>Ready</td><td>Running</td><td>Exit</td><td>Exit</td><td>Exit</td></tr>
+<tr><th>P4</th><td>Blocked</td><td>Ready</td><td>Ready</td><td>Ready</td><td>Running</td></tr>
+<tr><th>P5</th><td>Ready</td><td>Ready</td><td>Running</td><td>Running</td><td>Blocked</td></tr>
+</table>
+</div>
+<div class="a"><p class="q">(b) List every state transition P1 makes, with the time and the cause of each. Then give the Ready queue, front to back, at t = 16.</p>
+<pre>P1 begins in the Running state. At t = 2, it moves from Running to Blocked because it requests keyboard input. At t = 8, it moves from Blocked to Blocked/Suspend when it is swapped out of memory. At t = 12, the keyboard input arrives, moving P1 to Ready/Suspend because it is still swapped out. At t = 13, it is swapped back into memory and moves to Ready.
+
+At t = 16, the Ready queue from front to back is P2, P1. P4 is Running, P5 is Blocked, and P3 has exited.</pre>
+</div>
+<div class="a"><p class="q">(c) For each transition, say whether the seven-state model allows it. If it does, describe a situation in which it happens; if not, explain why it cannot happen.</p>
+<table><tr><th></th><th>Allowed? (yes / no)</th><th>Why, or when it happens</th></tr>
+<tr><th>Blocked → Running</th><td>No</td><td>A blocked process cannot run until its event occurs. It must move to Ready before being dispatched.</td></tr>
+<tr><th>Ready → Blocked</th><td>No</td><td>A Ready process is not executing, so it cannot request I/O. It must first enter Running.</td></tr>
+<tr><th>Blocked/Suspend → Ready/Suspend</th><td>Yes</td><td>The event the process was waiting for completes while the process is still swapped out.</td></tr>
+<tr><th>Running → Ready/Suspend</th><td>Yes</td><td>A running process is preempted and swapped out to disk, such as to make room for a higher-priority process.</td></tr>
+<tr><th>New → Running</th><td>No</td><td>A new process must first be admitted to Ready before it can be dispatched.</td></tr>
+</table>
+</div>
+<h2>Problem 2Build an interleaved trace</h2>
+<div class="a"><p class="q">(a) Write the trace as a list of segments: each row is one uninterrupted stretch of A, B, C or the dispatcher. Give the addresses and the cycle numbers of its first and last instruction. Leave any unused rows empty.</p>
+<table><tr><th></th><th>Who (A, B, C or dispatcher)</th><th>Addresses (first to last)</th><th>Cycles (first to last)</th></tr>
+<tr><th>1</th><td>A</td><td>4000 - 4004</td><td>1-5</td></tr>
+<tr><th>2</th><td>Dispatcher</td><td>200 - 203</td><td>6 - 9</td></tr>
+<tr><th>3</th><td>B</td><td>6000 - 6002</td><td>10 - 12</td></tr>
+<tr><th>4</th><td>Dispatcher</td><td>200 - 203</td><td>13 - 16</td></tr>
+<tr><th>5</th><td>C</td><td>9000 - 9004</td><td>17 - 21</td></tr>
+<tr><th>6</th><td>Dispatcher</td><td>200 - 203</td><td>22 - 25</td></tr>
+<tr><th>7</th><td>A</td><td>4005 - 4006</td><td>26 - 27</td></tr>
+<tr><th>8</th><td>Dispatcher</td><td>200 - 203</td><td>28 - 31</td></tr>
+<tr><th>9</th><td>C</td><td>9005 - 9009</td><td>32 - 36</td></tr>
+<tr><th>10</th><td></td><td></td><td></td></tr>
+</table>
+</div>
+<div class="a"><p class="q">(b) In which cycle does A execute its last instruction? In which cycle does C?</p>
+<pre>Process A executes its last instruction (4006) at cycle 27. Process C executes its last instruction (9009) at cycle 36.</pre>
+</div>
+<div class="a"><p class="q">(c) What percentage of all the cycles in the trace belong to the dispatcher?</p>
+<pre>The dispatcher runs 4 times, using 4 instruction cycles each time, for a total of 4 × 4 = 16 cycles. The entire trace takes 36 cycles.
+Dispatcher overhead = (16 / 36) × 100 = 44.44%.
+Therefore, approximately 44.44% of the instruction cycles belong to the dispatcher.</pre>
+</div>
+<div class="a"><p class="q">(d) Redo the trace in your head with a limit of 10 cycles instead of 5. How many cycles does the whole trace take now, what percentage belongs to the dispatcher, and in which cycle does A finish?</p>
+<pre>With a 10-cycle time slice, Process A executes during cycles 1 – 7, the dispatcher runs during cycles 8 – 11, Process B executes during cycles 12 – 14, the dispatcher runs during cycles 15 – 18, and Process C executes during cycles 19 – 28.
+The entire trace takes 28 cycles. The dispatcher runs twice for 4 cycles each, so its overhead is (8 / 28) × 100 = 28.57%. Process A finishes at cycle 7.</pre>
+</div>
+<div class="a"><p class="q">(e) The longer limit looks better on every number in (d). Give one reason an operating system would still not choose a very long limit.</p>
+<pre>An operating system would avoid a very long time slice because it can reduce responsiveness. Other processes may have to wait longer for CPU time, causing delays in interactive applications. A shorter time slice allows processes to share the CPU more frequently, even though it increases dispatcher overhead.</pre>
+</div>
+<h2>Problem 3Mode switch or process switch?</h2>
+<div class="a"><p class="q">(a) For each event, say whether it causes only a mode switch or also a process switch, and why. Assume other processes are always waiting in the Ready queue.</p>
+<table><tr><th></th><th>Mode switch only, or process switch?</th><th>Why</th></tr>
+<tr><th>The running process calls getpid(), a system call that simply returns its own process ID</th><td>Mode switch only</td><td>The system call returns the process ID, and the same process continues.</td></tr>
+<tr><th>A clock interrupt arrives, and the running process still has time left in its slice</th><td>Mode switch only</td><td>The process has not exhausted its time slice, so it continues running.</td></tr>
+<tr><th>A clock interrupt arrives, and the running process has used up its slice</th><td>Process switch</td><td>The time slice expires, and another Ready process is scheduled.</td></tr>
+<tr><th>The running process calls read() on a file whose data must come from the disk</th><td>Process switch</td><td>The running process blocks while waiting for disk I/O, allowing another process to run.</td></tr>
+<tr><th>A disk interrupt announces that data has arrived for a different, Blocked process whose priority is lower than the running process&#39;s</th><td>Mode switch only</td><td>The blocked process becomes Ready, but the higher-priority running process continues.</td></tr>
+<tr><th>The running process divides by zero, and the OS terminates it</th><td>Process switch</td><td>The process terminates, so the OS selects another Ready process to run.</td></tr>
+</table>
+</div>
+<div class="a"><p class="q">(b) These are the steps of a full process switch, scrambled. Write the letters in the order the chapter lists them.</p>
+<pre>B, E, C, A, D, F, G</pre>
+</div>
+<div class="a"><p class="q">(c) Explain in two or three sentences why a process switch costs much more time than a mode switch. Use the steps in (b).</p>
+<pre>A process switch takes more time than a mode switch because the operating system must save the current process&#39;s context, update its PCB and queue, and select another process to run. It must also update memory-management information and restore the new process&#39;s saved context. A mode switch only changes the CPU&#39;s execution mode and does not require switching to a different process.</pre>
+</div>
+<h2>Problem 4What goes in a process control block?</h2>
+<div class="a"><p class="q">(a) Put each item into one of the three categories of PCB contents: process identification, processor state information or process control information.</p>
+<table><tr><th></th><th>Category</th></tr>
+<tr><th>Process ID</th><td>Process identification</td></tr>
+<tr><th>Parent&#39;s process ID</th><td>Process identification</td></tr>
+<tr><th>User ID</th><td>Process identification</td></tr>
+<tr><th>Program counter</th><td>Processor state information</td></tr>
+<tr><th>Stack pointer</th><td>Processor state information</td></tr>
+<tr><th>General-purpose registers</th><td>Processor state information</td></tr>
+<tr><th>Program status word (condition codes, interrupt-enable bit, mode bit)</th><td>Processor state information</td></tr>
+<tr><th>Process state (Ready, Blocked, ...)</th><td>Process control information</td></tr>
+<tr><th>Scheduling priority</th><td>Process control information</td></tr>
+<tr><th>The event the process is waiting for</th><td>Process control information</td></tr>
+<tr><th>Pointer to the next PCB in the same queue</th><td>Process control information</td></tr>
+<tr><th>List of open files</th><td>Process control information</td></tr>
+<tr><th>Pointers to the process&#39;s memory tables</th><td>Process control information</td></tr>
+<tr><th>Privileges (which memory and instructions it may use)</th><td>Process control information</td></tr>
+</table>
+</div>
+<div class="a"><p class="q">(b) Which category must the OS copy out of the processor every single time the process stops running, and why? What would go wrong for the process if the OS skipped that step once?</p>
+<pre>The OS must save the processor state information every time a process stops running. This includes the program counter, stack pointer, registers, and program status word, which allow the process to resume where it left off. If the OS skipped this step, the process could lose important register values or resume at the wrong instruction, potentially causing incorrect results or a crash.</pre>
+</div>
+<h2>Problem 5Predict what fork() prints</h2>
+<div class="a"><p class="q">(a) What does Program A print, in what order? Why does the parent print 7 rather than 12, even though the child added 5 first?</p>
+<pre>Program A prints:
+
+child: x = 15
+parent: x = 7
+
+The child prints first because the parent uses wait(NULL) to wait for the the child to finish. The parent prints 7 instead of 12 because fork() creates separate copies of the variable x for each process. The child&#39;s addition does not affect the parent&#39;s copy, so the parent calculates 10 - 3 = 7.</pre>
+</div>
+<div class="a"><p class="q">(b) For Program B: how many processes exist in total by the end (count the original), how many times is fork() called in total, and how many lines does it print? Explain how the count doubles.</p>
+<pre>Program B creates 8 processes in total, including the original process. The fork() function is called 7 times, and the program prints 8 lines of &quot;hello&quot;.
+
+The number of processes doubles with each iteration of the loop. It starts with 1 process, becomes 2 after the first iteration, 4 after the second, and 8 after the third (2^3 = 8). The total number of fork() calls is 1 + 2 + 4 = 7. Since every process executes printf() once after the loop, 8 lines are printed.</pre>
+</div>
+<div class="a"><p class="q">(c) What does Program C print, and in what order? Is that order guaranteed every run? Describe the family: which process is the parent of which, and which one prints each letter.</p>
+<pre>Program C prints:
+
+C
+B
+A
+
+This order is guaranteed because the wait(NULL) calls force each parent to wait for its child to finish before continuing. The original parent creates a child through the first fork(), and that child creates a grandchild through the second fork(). The grandchild prints C first, the child prints B after the grandchild finishes, and the original parent prints A after its child finishes.</pre>
+</div>
+<div class="a"><p class="q">(d) Suppose Program A&#39;s parent did not call wait(NULL) and instead kept computing for an hour, while the child ended within a millisecond. What state is the child in during that hour, what does the kernel still keep about it, and why does the kernel keep it?</p>
+<pre>The child becomes a zombie process because it has finished executing, but its parent has not called wait(NULL) to collect its termination status. The kernel keeps a small process table entry containing information such as the child&#39;s process ID and exit status, even though the child is no longer running. This information is retained so the parent can eventually retrieve the child&#39;s termination status and allow the kernel to fully remove the process entry.</pre>
+</div>
+<h2>Problem 6User-level threads versus kernel-level threads</h2>
+<div class="a"><p class="q">(a) Fill in the table.</p>
+<table><tr><th></th><th>T1 calls a blocking read(): what happens to T2, T3 and T4?</th><th>Most threads running at the same instant</th><th>Who performs a switch between two of these threads?</th></tr>
+<tr><th>Pure ULT</th><td>T2-T4 also blocked</td><td>1</td><td>Thread library</td></tr>
+<tr><th>Pure KLT</th><td>T2-T4 can continue</td><td>2</td><td>Kernel</td></tr>
+</table>
+</div>
+<div class="a"><p class="q">(b) On a test machine, creating a user-level thread takes 3 µs, creating a kernel-level thread takes 45 µs and creating a process takes 700 µs. A server creates one new worker for each request and receives 1,500 requests per second. For each of the three kinds of worker, how much processor time per second goes to creating workers, and what percentage of one core is that? Which option cannot work on a single core at all?</p>
+<pre>User-level threads:
+3 µs × 1,500 = 4,500 µs = 4.5 ms per second.
+(4,500 / 1,000,000) × 100 = 0.45% of one core.
+
+Kernel-level threads:
+45 µs × 1,500 = 67,500 µs = 67.5 ms per second.
+(67,500 / 1,000,000) × 100 = 6.75% of one core.
+
+Processes:
+700 µs × 1,500 = 1,050,000 µs = 1,050 ms per second.
+(1,050,000 / 1,000,000) × 100 = 105% of one core.
+
+Creating a new process for every request cannot sustain this workload on a single core because process creation alone requires 105% of the core&#39;s available CPU time. User-level and kernel-level threads require significantly less overhead.</pre>
+</div>
+<div class="a"><p class="q">(c) What is jacketing, and which weakness of user-level threads does it work around?</p>
+<pre>Jacketing is a technique used by user-level thread libraries to wrap potentially blocking system calls with a nonblocking check. If the operation would block, the library temporarily suspends that thread and runs another thread until the operation can be retried. This works around the weakness of user-level threads where one blocking system call can cause the entire process and all its threads to stop running.</pre>
+</div>
+<h2>Problem 7Amdahl&#39;s law</h2>
+<div class="a"><p class="q">(a) A program has f = 0.85. Fill in the speedup and efficiency (two decimal places for speedup, a percentage for efficiency). For the unlimited row, give the limit the speedup approaches and leave efficiency empty.</p>
+<table><tr><th></th><th>Speedup</th><th>Efficiency</th></tr>
+<tr><th>2</th><td>1.74</td><td>86.96%</td></tr>
+<tr><th>4</th><td>2.76</td><td>68.97%</td></tr>
+<tr><th>8</th><td>3.90</td><td>48.78%</td></tr>
+<tr><th>16</th><td>4.92</td><td>30.77%</td></tr>
+<tr><th>Unlimited</th><td>6.67</td><td></td></tr>
+</table>
+</div>
+<div class="a"><p class="q">(b) A team measures a speedup of 3.0 on 4 cores for another program. Solve Amdahl&#39;s law for f, and keep it as an exact fraction (rounding it can move a borderline answer). Using that f, predict the speedup on 12 cores, and find the smallest number of cores that gives a speedup of at least 5.</p>
+<pre>1. Parallel fraction (f):
+
+3 = 1 / [(1 − f) + f/4]
+
+1/3 = 1 − 3f/4
+
+3f/4 = 2/3
+
+f = (2/3)(4/3) = 8/9
+
+2. Speedup on 12 cores:
+
+S(12) = 1 / [1/9 + (8/9)/12]
+
+S(12) = 1 / (5/27) = 5.40
+
+3. Minimum cores for speedup ≥ 5:
+
+9N / (N + 8) ≥ 5
+
+9N ≥ 5N + 40
+
+4N ≥ 40
+
+N ≥ 10
+
+Final results: The parallel fraction is 8/9, the predicted speedup on 12 cores is 5.40, and the minimum number of cores needed to achieve a speedup of at least 5 is 10.</pre>
+</div>
+<div class="a"><p class="q">(c) The program from (a) runs on 16 cores. Option X doubles the hardware to 32 cores. Option Y keeps 16 cores but rewrites the code so the serial part shrinks from 15% to 7.5%. Compute the speedup of each option. Which helps more, and what does that say about where to spend effort?</p>
+<pre>Option X (32 cores, 85% parallel):
+
+S(32) = 1 / [0.15 + (0.85 / 32)]
+
+S(32) = 1 / 0.1765625 = 5.66
+
+Option Y (16 cores, 92.5% parallel):
+
+S(16) = 1 / [0.075 + (0.925 / 16)]
+
+S(16) = 1 / 0.1328125 = **7.53**
+
+Conclusion: Option Y provides the greater speedup (7.53 compared to 5.66). This demonstrates that reducing the serial portion of a program can be more effective than simply adding more CPU cores. Development effort should focus on improving parallelization and reducing serial bottlenecks before investing in additional hardware.</pre>
+</div>
+<h2>Problem 8Threads in real systems</h2>
+<div class="a"><p class="q">(a) Linux creates both processes and threads with one system call, clone(), whose flags choose what the new task shares with its creator: CLONE_VM shares the address space (memory), CLONE_FS the current directory and file-system information, CLONE_FILES the table of open files, CLONE_SIGHAND the signal handlers, and CLONE_THREAD puts the new task in the creator&#39;s thread group (the same process, as far as getpid() is concerned). SIGCHLD is not a sharing flag; it only asks for a signal to the parent when the child ends. The calls below show only the flags (the real call also takes a function to run, a stack and an argument). For each call, answer yes or no.</p>
+<table><tr><th></th><th>Shares memory?</th><th>Shares the open-file table?</th><th>Same process (thread group)?</th></tr>
+<tr><th>clone(SIGCHLD)</th><td>No</td><td>No</td><td>No</td></tr>
+<tr><th>clone(CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD)</th><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><th>clone(CLONE_FILES | SIGCHLD)</th><td>No</td><td>Yes</td><td>No</td></tr>
+</table>
+</div>
+<div class="a"><p class="q">(a) Linux creates both processes and threads with one system call, clone(), whose flags choose what the new task shares with its creator: CLONE_VM shares the address space (memory), CLONE_FS the current directory and file-system information, CLONE_FILES the table of open files, CLONE_SIGHAND the signal handlers, and CLONE_THREAD puts the new task in the creator&#39;s thread group (the same process, as far as getpid() is concerned). SIGCHLD is not a sharing flag; it only asks for a signal to the parent when the child ends. The calls below show only the flags (the real call also takes a function to run, a stack and an argument). For each call, answer yes or no.</p>
+<pre>The first call, clone(SIGCHLD), behaves like fork() because it creates a separate process without sharing memory or the open-file table. The second call creates a thread because it shares memory, open files, and the same thread group as its creator. The third call creates a separate process that shares only its open-file table.
+
+Internally, Linux represents both processes and threads as tasks. The clone() flags determine which resources the tasks share and whether they belong to the same thread group.</pre>
+</div>
+<div class="a"><p class="q">(b) An Android phone runs low on memory. Using the chapter&#39;s five importance levels, number these five processes in the order Android kills them, 1 for the first to go and 5 for the last.</p>
+<table><tr><th></th><th>Kill order (1 = first)</th><th>Its importance level</th></tr>
+<tr><th>A mail app the user is typing a message into right now</th><td>5</td><td>Foreground process</td></tr>
+<tr><th>A photo-backup app that started a service to upload photos and shows nothing on screen</th><td>3</td><td>Service process</td></tr>
+<tr><th>A game the user left ten minutes ago; its activity is stopped</th><td>2</td><td>Background process</td></tr>
+<tr><th>A process that holds no app components at all, kept only so the next launch is faster</th><td>1</td><td>Empty process</td></tr>
+<tr><th>A map app still partly visible behind a small dialog box</th><td>4</td><td>Visible process</td></tr>
+</table>
+</div>
+<div class="a"><p class="q">(c) Grand Central Dispatch (macOS and iOS) lets programmers get concurrency without creating threads themselves. Explain how: what the programmer writes, where it goes, and who runs it. Why is this cheaper than creating one new thread per task?</p>
+<pre>Grand Central Dispatch (GCD) allows programmers to achieve concurrency by writing tasks as blocks of code and placing them into dispatch queues. GCD manages a pool of reusable worker threads and assigns queued tasks to available threads, while the operating system schedules those threads onto CPU cores.
+
+This is cheaper than creating a new thread for every task because GCD reuses existing threads, reducing thread creation and destruction overhead, memory usage, and unnecessary context switching. It also adjusts thread usage based on available system resources.</pre>
+</div>
+<h2>B3Write the missing pieces, run, and explain</h2>
+<div class="a"><p class="q">B-a Paste the complete output of python procthreads.py.</p>
+<pre>Experiment 1: identity
+  main 0: pid=34960  ppid=34076  thread id=11508819
+  thread 1: pid=34960  ppid=34076  thread id=11508820
+  thread 2: pid=34960  ppid=34076  thread id=11508821
+  thread 3: pid=34960  ppid=34076  thread id=11508822
+  process 1: pid=34962  ppid=34960  thread id=11508832
+  process 2: pid=34963  ppid=34960  thread id=11508833
+  process 3: pid=34964  ppid=34960  thread id=11508834
+
+Experiment 2: sharing   (process start method: spawn)
+  inside the thread: SHARED = [&#39;main&#39;, &#39;thread&#39;]
+  inside the process: SHARED = [&#39;process&#39;]
+  back in main: SHARED = [&#39;main&#39;, &#39;thread&#39;]
+
+Experiment 3: CPU-bound work (8 tasks x 6,000,000 loop steps)
+  Python 3.14.2, global interpreter lock enabled: True, logical CPUs: 8
+  threads    workers=1  time=  2.56 s  speedup= 1.00
+  threads    workers=2  time=  2.54 s  speedup= 1.01
+  threads    workers=4  time=  2.55 s  speedup= 1.01
+  threads    workers=8  time=  2.55 s  speedup= 1.01
+  processes  workers=1  time=  2.64 s  speedup= 1.00
+  processes  workers=2  time=  1.36 s  speedup= 1.94
+  processes  workers=4  time=  0.74 s  speedup= 3.55
+  processes  workers=8  time=  0.59 s  speedup= 4.45
+  Amdahl: f from the 4-process speedup = 0.958; predicted 8-process speedup = 6.18; measured = 4.45
+
+Experiment 4: I/O-bound work (8 tasks, each waits 0.25 s)
+  threads    workers=1  time=  2.03 s
+  threads    workers=8  time=  0.26 s</pre>
+</div>
+<div class="a"><p class="q">B-b Experiment 1. Which of pid, ppid and thread ID are the same for the three threads, and which differ? Answer the same for the three processes, and say whose pid each process shows as its ppid. (With Python 3.14 or newer on Linux, new processes are started by a small helper process called the fork server, so their ppid is that helper&#39;s pid; say so if that is what you see.) Connect what you see to the idea that the process is the unit of resource ownership and the thread is the unit of dispatching.</p>
+<pre>In Experiment 1, all three threads had the same PID (34960) and PPID (34076), but each had a different thread ID. This shows that threads belong to the same process while maintaining separate execution identities.
+
+The three processes each had different PIDs (34962, 34963, and 34964) and thread IDs, but they all had the same PPID (34960), which was the PID of the original Python process.
+
+These results demonstrate that a process is the unit of resource ownership because it manages resources such as memory and open files, while a thread is the unit of dispatching because the operating system schedules individual threads for execution.</pre>
+</div>
+<div class="a"><p class="q">B-c Experiment 2. Why does &#39;thread&#39; appear in the main program&#39;s list afterwards while &#39;process&#39; never does? What did the process print as its list, and why does it look like that? (The heading of Experiment 2 names the &quot;start method&quot; your system used to create the process: spawn and forkserver start the new process from a fresh copy of the program, while fork copies the parent&#39;s memory, as in Problem 5.)</p>
+<pre>The thread&#39;s change appears in the main program&#39;s list because threads within the same process share memory. When the thread adds &quot;thread&quot; to the SHARED list, the main program can see that modification.
+
+The process printed [&#39;process&#39;] because my system uses the spawn start method, which creates a new Python interpreter with its own initialized global variables. The process starts with an empty SHARED list and adds &quot;process&quot; to its own memory. Since processes have separate address spaces, this change does not affect the main program&#39;s list, which remains [&#39;main&#39;, &#39;thread&#39;].</pre>
+</div>
+<div class="a"><p class="q">B-d Experiment 3. Copy your times and speedups into the table.</p>
+<table><tr><th></th><th>Time (s)</th><th>Speedup</th></tr>
+<tr><th>Threads, 1</th><td>2.56</td><td>1.00</td></tr>
+<tr><th>Threads, 2</th><td>2.54</td><td>1.01</td></tr>
+<tr><th>Threads, 4</th><td>2.55</td><td>1.01</td></tr>
+<tr><th>Threads, 8</th><td>2.55</td><td>1.01</td></tr>
+<tr><th>Processes, 1</th><td>2.64</td><td>1.00</td></tr>
+<tr><th>Processes, 2</th><td>1.36</td><td>1.94</td></tr>
+<tr><th>Processes, 4</th><td>0.74</td><td>3.55</td></tr>
+<tr><th>Processes, 8</th><td>0.59</td><td>4.45</td></tr>
+</table>
+</div>
+<div class="a"><p class="q">B-e Compare the thread rows with the process rows and explain what you measured. The program printed whether Python&#39;s global interpreter lock (GIL) is enabled. With the GIL on, only one thread of a process can execute Python code at any instant, although Python threads are real kernel-level threads; with it off (a &quot;free-threaded&quot; Python build), threads can compute on several cores at once. Say which case your run was and whether your thread rows sped up. Then: which thread model from Problem 6 does a GIL-limited process resemble for CPU-bound work, and why can separate processes use several cores either way?</p>
+<pre>In Experiment 3, increasing the number of threads from 1 to 8 did not significantly improve performance. The execution time stayed around 2.55 seconds, with a speedup of only 1.01. However, increasing the number of processes from 1 to 8 reduced execution time from 2.64 seconds to 0.59 seconds, achieving a speedup of 4.45.
+
+My Python interpreter had the Global Interpreter Lock (GIL) enabled. The GIL allows only one thread in a process to execute Python code at a time, which limits parallel execution for CPU-bound tasks. Although Python threads are scheduled by the operating system, they could not run this Python computation simultaneously. Separate processes have their own interpreters and GILs, allowing them to execute on multiple CPU cores. This explains why processes performed significantly better than threads in my results.</pre>
+</div>
+<div class="a"><p class="q">B-f Using your 4-process speedup, solve Amdahl&#39;s law for f by hand (show the numbers), predict the 8-process speedup, and compare it with what you measured. If they differ noticeably, in either direction, give two reasons that could explain it. If your f comes out above 1 or below 0, do not force it into range: say what that means about your measurements (for example, a 4-worker speedup greater than 4) and which assumption of Amdahl&#39;s law they broke. Think about how many cores your computer has (and whether some are slower &quot;efficiency&quot; cores), about work that happens only once, such as starting the pool, and about how much one noisy measurement moves f.</p>
+<pre>Using my measured 4-process speedup of 3.55, I calculated the parallel fraction using Amdahl&#39;s Law:
+
+S(n) = 1 / [(1 - f) + f/n]
+
+3.55 = 1 / [(1 - f) + f/4]
+
+f = (1 - 1/3.55) / (1 - 1/4)
+
+f ≈ 0.958, or 95.8%.
+
+Using this value to predict the speedup with 8 processes:
+
+S(8) = 1 / [(1 - 0.958) + 0.958/8] ≈ 6.18
+
+My predicted speedup was approximately 6.18, but my measured speedup was only 4.45.
+
+One possible explanation is that my computer has 8 logical CPUs, which may not all provide the same processing power, especially if some are efficiency cores. Another explanation is process startup overhead, CPU scheduling, and measurement variability, which Amdahl&#39;s simplified model does not fully account for. These factors can cause actual performance to differ from the theoretical prediction.</pre>
+</div>
+<div class="a"><p class="q">B-g Experiment 4. Compare your 1-thread and 8-thread times. What is a waiting thread doing, and what does the kernel do with the other threads meanwhile? Use that to explain your result, and contrast it with what threads did (or did not do) for the CPU-bound work in Experiment 3. If eight threads were not clearly faster, suggest what on your computer could have caused it.</p>
+<pre>In Experiment 4, using one thread took 2.03 seconds, while using eight threads took only 0.26 seconds, making the eight-thread execution approximately 7.8 times faster.
+
+When a thread is waiting for an I/O operation, the operating system can place it into a waiting state and schedule other runnable threads instead. This allows multiple threads to overlap their waiting periods rather than completing each task sequentially.
+
+This explains why threads performed well in Experiment 4. In contrast, Experiment 3 involved CPU-bound calculations, and Python&#39;s enabled GIL prevented multiple threads from executing Python code simultaneously. As a result, increasing the number of threads provided almost no improvement for CPU-bound work, while it significantly improved performance for I/O-bound work.</pre>
+</div>
+<div class="a"><p class="q">B-h Experiment 5. Paste the command you used and what it printed. How many threads did your operating system report for the process? The program started four extra threads beside its main thread; if the count is different, suggest where the extra threads could come from.</p>
+<pre>For Experiment 5, I ran `python3 procthreads.py --pause`, which started a Python process with PID 35139. I then opened a second terminal and ran:
+
+`ps -M -p 35139`
+
+The command printed:
+
+USER            PID   TT   %CPU STAT PRI     STIME     UTIME COMMAND
+connorsheldon 35139 s002    0.0 S    31T   0:00.02   0:00.04 /opt/homebrew/Cellar/python@3.14/
+              35139         0.0 S    31T   0:00.00   0:00.00
+              35139         0.0 S    31T   0:00.00   0:00.00
+              35139         0.0 S    31T   0:00.00   0:00.00
+              35139         0.0 S    31T   0:00.00   0:00.00
+
+macOS reported 5 threads, which matches the expected count of one main thread and four additional waiting threads. All five entries shared the same PID, confirming that they belonged to the same process. There were no unexpected additional threads. If the count had been higher, those threads could have come from the Python interpreter or supporting libraries.</pre>
+</div>
+<div class="a"><p class="q">B-i Your own experiment. Change one thing in procthreads.py to test an idea of your own, and mark the changed line with a comment that starts # B-i. Some starting points: add 16 to WORKER_COUNTS; change TASKS from 8 to 3 or 24; make each CPU task also sleep for part of its time; give the tasks unequal sizes. Before running it, write down the change, what you predict will happen and why (use the chapter&#39;s ideas and your earlier results). Then run it, paste the relevant lines of output, and say whether your prediction held and what explains any surprise.</p>
+<pre>Change: I will add 16 to WORKER_COUNTS so the program tests 1, 2, 4, 8, and 16 workers.
+
+Prediction and reason (written before running): I predict that increasing the number of threads to 16 will not significantly improve CPU-bound performance because my Python interpreter has the GIL enabled. I also predict that using 16 processes will provide little or no additional speedup compared with 8 processes because my computer has only 8 logical CPUs. The extra processes may introduce scheduling overhead and CPU contention, potentially making execution slower.
+
+Change: I added 16 to WORKER_COUNTS so the program would test 1, 2, 4, 8, and 16 workers. I marked the changed line with a `# B-i` comment.
+
+Prediction and reason (written before running): I predicted that increasing the number of threads to 16 would not significantly improve CPU-bound performance because my Python interpreter has the GIL enabled. I also predicted that 16 processes would provide little or no additional speedup compared with 8 processes because my computer has only 8 logical CPUs. The additional processes could introduce scheduling overhead and CPU contention.
+
+Relevant output:
+
+text
+threads    workers=8   time=  2.53 s  speedup= 1.00
+threads    workers=16  time=  2.54 s  speedup= 1.00
+processes  workers=8   time=  0.60 s  speedup= 4.39
+processes  workers=16  time=  0.57 s  speedup= 4.59
+
+
+Did the prediction hold?: My prediction mostly held. Increasing the number of threads to 16 provided no meaningful improvement, which is consistent with the GIL limiting parallel execution of CPU-bound Python code. Using 16 processes was slightly faster than using 8 processes, improving from 0.60 seconds to 0.57 seconds. However, the improvement was small and could be explained by measurement variability or CPU scheduling differences. Since the program only has 8 tasks, the additional processes do not provide much opportunity for further parallel execution.</pre>
+</div>
+<script type="application/json" id="answer-data">{"hw":"os-hw2","answers":{"p1a":[["Blocked","Blocked/Suspend","Blocked/Suspend","Ready","Ready"],["Running","Ready","Ready","Ready","Ready"],["Ready","Running","Exit","Exit","Exit"],["Blocked","Ready","Ready","Ready","Running"],["Ready","Ready","Running","Running","Blocked"]],"p1b":"P1 begins in the Running state. At t = 2, it moves from Running to Blocked because it requests keyboard input. At t = 8, it moves from Blocked to Blocked/Suspend when it is swapped out of memory. At t = 12, the keyboard input arrives, moving P1 to Ready/Suspend because it is still swapped out. At t = 13, it is swapped back into memory and moves to Ready.\n\nAt t = 16, the Ready queue from front to back is P2, P1. P4 is Running, P5 is Blocked, and P3 has exited.","p1c":[["No","A blocked process cannot run until its event occurs. It must move to Ready before being dispatched."],["No","A Ready process is not executing, so it cannot request I/O. It must first enter Running."],["Yes","The event the process was waiting for completes while the process is still swapped out."],["Yes","A running process is preempted and swapped out to disk, such as to make room for a higher-priority process."],["No","A new process must first be admitted to Ready before it can be dispatched."]],"p2a":[["A","4000 - 4004","1-5"],["Dispatcher","200 - 203","6 - 9"],["B","6000 - 6002","10 - 12"],["Dispatcher","200 - 203","13 - 16"],["C","9000 - 9004","17 - 21"],["Dispatcher","200 - 203","22 - 25"],["A","4005 - 4006","26 - 27"],["Dispatcher","200 - 203","28 - 31"],["C","9005 - 9009","32 - 36"],["","",""]],"p2b":"Process A executes its last instruction (4006) at cycle 27. Process C executes its last instruction (9009) at cycle 36.","p2c":"The dispatcher runs 4 times, using 4 instruction cycles each time, for a total of 4 × 4 = 16 cycles. The entire trace takes 36 cycles.\nDispatcher overhead = (16 / 36) × 100 = 44.44%.\nTherefore, approximately 44.44% of the instruction cycles belong to the dispatcher.","p2d":"With a 10-cycle time slice, Process A executes during cycles 1 – 7, the dispatcher runs during cycles 8 – 11, Process B executes during cycles 12 – 14, the dispatcher runs during cycles 15 – 18, and Process C executes during cycles 19 – 28.\nThe entire trace takes 28 cycles. The dispatcher runs twice for 4 cycles each, so its overhead is (8 / 28) × 100 = 28.57%. Process A finishes at cycle 7.","p2e":"An operating system would avoid a very long time slice because it can reduce responsiveness. Other processes may have to wait longer for CPU time, causing delays in interactive applications. A shorter time slice allows processes to share the CPU more frequently, even though it increases dispatcher overhead.","p3a":[["Mode switch only","The system call returns the process ID, and the same process continues."],["Mode switch only","The process has not exhausted its time slice, so it continues running."],["Process switch","The time slice expires, and another Ready process is scheduled."],["Process switch","The running process blocks while waiting for disk I/O, allowing another process to run."],["Mode switch only","The blocked process becomes Ready, but the higher-priority running process continues."],["Process switch","The process terminates, so the OS selects another Ready process to run."]],"p3b":"B, E, C, A, D, F, G","p3c":"A process switch takes more time than a mode switch because the operating system must save the current process's context, update its PCB and queue, and select another process to run. It must also update memory-management information and restore the new process's saved context. A mode switch only changes the CPU's execution mode and does not require switching to a different process.","p4a":[["Process identification"],["Process identification"],["Process identification"],["Processor state information"],["Processor state information"],["Processor state information"],["Processor state information"],["Process control information"],["Process control information"],["Process control information"],["Process control information"],["Process control information"],["Process control information"],["Process control information"]],"p4b":"The OS must save the processor state information every time a process stops running. This includes the program counter, stack pointer, registers, and program status word, which allow the process to resume where it left off. If the OS skipped this step, the process could lose important register values or resume at the wrong instruction, potentially causing incorrect results or a crash.","p5a":"Program A prints:\n\nchild: x = 15\nparent: x = 7\n\nThe child prints first because the parent uses wait(NULL) to wait for the the child to finish. The parent prints 7 instead of 12 because fork() creates separate copies of the variable x for each process. The child's addition does not affect the parent's copy, so the parent calculates 10 - 3 = 7.","p5b":"Program B creates 8 processes in total, including the original process. The fork() function is called 7 times, and the program prints 8 lines of \"hello\".\n\nThe number of processes doubles with each iteration of the loop. It starts with 1 process, becomes 2 after the first iteration, 4 after the second, and 8 after the third (2^3 = 8). The total number of fork() calls is 1 + 2 + 4 = 7. Since every process executes printf() once after the loop, 8 lines are printed.","p5c":"Program C prints:\n\nC\nB\nA\n\nThis order is guaranteed because the wait(NULL) calls force each parent to wait for its child to finish before continuing. The original parent creates a child through the first fork(), and that child creates a grandchild through the second fork(). The grandchild prints C first, the child prints B after the grandchild finishes, and the original parent prints A after its child finishes.","p5d":"The child becomes a zombie process because it has finished executing, but its parent has not called wait(NULL) to collect its termination status. The kernel keeps a small process table entry containing information such as the child's process ID and exit status, even though the child is no longer running. This information is retained so the parent can eventually retrieve the child's termination status and allow the kernel to fully remove the process entry.","p6a":[["T2-T4 also blocked","1","Thread library"],["T2-T4 can continue","2","Kernel"]],"p6b":"User-level threads:\n3 µs × 1,500 = 4,500 µs = 4.5 ms per second.\n(4,500 / 1,000,000) × 100 = 0.45% of one core.\n\nKernel-level threads:\n45 µs × 1,500 = 67,500 µs = 67.5 ms per second.\n(67,500 / 1,000,000) × 100 = 6.75% of one core.\n\nProcesses:\n700 µs × 1,500 = 1,050,000 µs = 1,050 ms per second.\n(1,050,000 / 1,000,000) × 100 = 105% of one core.\n\nCreating a new process for every request cannot sustain this workload on a single core because process creation alone requires 105% of the core's available CPU time. User-level and kernel-level threads require significantly less overhead.","p6c":"Jacketing is a technique used by user-level thread libraries to wrap potentially blocking system calls with a nonblocking check. If the operation would block, the library temporarily suspends that thread and runs another thread until the operation can be retried. This works around the weakness of user-level threads where one blocking system call can cause the entire process and all its threads to stop running.","p7a":[["1.74","86.96%"],["2.76","68.97%"],["3.90","48.78%"],["4.92","30.77%"],["6.67",""]],"p7b":"1. Parallel fraction (f):\n\n3 = 1 / [(1 − f) + f/4]\n\n1/3 = 1 − 3f/4\n\n3f/4 = 2/3\n\nf = (2/3)(4/3) = 8/9\n\n2. Speedup on 12 cores:\n\nS(12) = 1 / [1/9 + (8/9)/12]\n\nS(12) = 1 / (5/27) = 5.40\n\n3. Minimum cores for speedup ≥ 5:\n\n9N / (N + 8) ≥ 5\n\n9N ≥ 5N + 40\n\n4N ≥ 40\n\nN ≥ 10\n\nFinal results: The parallel fraction is 8/9, the predicted speedup on 12 cores is 5.40, and the minimum number of cores needed to achieve a speedup of at least 5 is 10.","p7c":"Option X (32 cores, 85% parallel):\n\nS(32) = 1 / [0.15 + (0.85 / 32)]\n\nS(32) = 1 / 0.1765625 = 5.66\n\nOption Y (16 cores, 92.5% parallel):\n\nS(16) = 1 / [0.075 + (0.925 / 16)]\n\nS(16) = 1 / 0.1328125 = **7.53**\n\nConclusion: Option Y provides the greater speedup (7.53 compared to 5.66). This demonstrates that reducing the serial portion of a program can be more effective than simply adding more CPU cores. Development effort should focus on improving parallelization and reducing serial bottlenecks before investing in additional hardware.","p8a":[["No","No","No"],["Yes","Yes","Yes"],["No","Yes","No"]],"p8a-note":"The first call, clone(SIGCHLD), behaves like fork() because it creates a separate process without sharing memory or the open-file table. The second call creates a thread because it shares memory, open files, and the same thread group as its creator. The third call creates a separate process that shares only its open-file table.\n\nInternally, Linux represents both processes and threads as tasks. The clone() flags determine which resources the tasks share and whether they belong to the same thread group.","p8b":[["5","Foreground process"],["3","Service process"],["2","Background process"],["1","Empty process"],["4","Visible process"]],"p8c":"Grand Central Dispatch (GCD) allows programmers to achieve concurrency by writing tasks as blocks of code and placing them into dispatch queues. GCD manages a pool of reusable worker threads and assigns queued tasks to available threads, while the operating system schedules those threads onto CPU cores.\n\nThis is cheaper than creating a new thread for every task because GCD reuses existing threads, reducing thread creation and destruction overhead, memory usage, and unnecessary context switching. It also adjusts thread usage based on available system resources.","ba":"Experiment 1: identity\n  main 0: pid=34960  ppid=34076  thread id=11508819\n  thread 1: pid=34960  ppid=34076  thread id=11508820\n  thread 2: pid=34960  ppid=34076  thread id=11508821\n  thread 3: pid=34960  ppid=34076  thread id=11508822\n  process 1: pid=34962  ppid=34960  thread id=11508832\n  process 2: pid=34963  ppid=34960  thread id=11508833\n  process 3: pid=34964  ppid=34960  thread id=11508834\n\nExperiment 2: sharing   (process start method: spawn)\n  inside the thread: SHARED = ['main', 'thread']\n  inside the process: SHARED = ['process']\n  back in main: SHARED = ['main', 'thread']\n\nExperiment 3: CPU-bound work (8 tasks x 6,000,000 loop steps)\n  Python 3.14.2, global interpreter lock enabled: True, logical CPUs: 8\n  threads    workers=1  time=  2.56 s  speedup= 1.00\n  threads    workers=2  time=  2.54 s  speedup= 1.01\n  threads    workers=4  time=  2.55 s  speedup= 1.01\n  threads    workers=8  time=  2.55 s  speedup= 1.01\n  processes  workers=1  time=  2.64 s  speedup= 1.00\n  processes  workers=2  time=  1.36 s  speedup= 1.94\n  processes  workers=4  time=  0.74 s  speedup= 3.55\n  processes  workers=8  time=  0.59 s  speedup= 4.45\n  Amdahl: f from the 4-process speedup = 0.958; predicted 8-process speedup = 6.18; measured = 4.45\n\nExperiment 4: I/O-bound work (8 tasks, each waits 0.25 s)\n  threads    workers=1  time=  2.03 s\n  threads    workers=8  time=  0.26 s","bb":"In Experiment 1, all three threads had the same PID (34960) and PPID (34076), but each had a different thread ID. This shows that threads belong to the same process while maintaining separate execution identities.\n\nThe three processes each had different PIDs (34962, 34963, and 34964) and thread IDs, but they all had the same PPID (34960), which was the PID of the original Python process.\n\nThese results demonstrate that a process is the unit of resource ownership because it manages resources such as memory and open files, while a thread is the unit of dispatching because the operating system schedules individual threads for execution.","bc":"The thread's change appears in the main program's list because threads within the same process share memory. When the thread adds \"thread\" to the SHARED list, the main program can see that modification.\n\nThe process printed ['process'] because my system uses the spawn start method, which creates a new Python interpreter with its own initialized global variables. The process starts with an empty SHARED list and adds \"process\" to its own memory. Since processes have separate address spaces, this change does not affect the main program's list, which remains ['main', 'thread'].","bd":[["2.56","1.00"],["2.54","1.01"],["2.55","1.01"],["2.55","1.01"],["2.64","1.00"],["1.36","1.94"],["0.74","3.55"],["0.59","4.45"]],"be":"In Experiment 3, increasing the number of threads from 1 to 8 did not significantly improve performance. The execution time stayed around 2.55 seconds, with a speedup of only 1.01. However, increasing the number of processes from 1 to 8 reduced execution time from 2.64 seconds to 0.59 seconds, achieving a speedup of 4.45.\n\nMy Python interpreter had the Global Interpreter Lock (GIL) enabled. The GIL allows only one thread in a process to execute Python code at a time, which limits parallel execution for CPU-bound tasks. Although Python threads are scheduled by the operating system, they could not run this Python computation simultaneously. Separate processes have their own interpreters and GILs, allowing them to execute on multiple CPU cores. This explains why processes performed significantly better than threads in my results.","bf":"Using my measured 4-process speedup of 3.55, I calculated the parallel fraction using Amdahl's Law:\n\nS(n) = 1 / [(1 - f) + f/n]\n\n3.55 = 1 / [(1 - f) + f/4]\n\nf = (1 - 1/3.55) / (1 - 1/4)\n\nf ≈ 0.958, or 95.8%.\n\nUsing this value to predict the speedup with 8 processes:\n\nS(8) = 1 / [(1 - 0.958) + 0.958/8] ≈ 6.18\n\nMy predicted speedup was approximately 6.18, but my measured speedup was only 4.45.\n\nOne possible explanation is that my computer has 8 logical CPUs, which may not all provide the same processing power, especially if some are efficiency cores. Another explanation is process startup overhead, CPU scheduling, and measurement variability, which Amdahl's simplified model does not fully account for. These factors can cause actual performance to differ from the theoretical prediction.","bg":"In Experiment 4, using one thread took 2.03 seconds, while using eight threads took only 0.26 seconds, making the eight-thread execution approximately 7.8 times faster.\n\nWhen a thread is waiting for an I/O operation, the operating system can place it into a waiting state and schedule other runnable threads instead. This allows multiple threads to overlap their waiting periods rather than completing each task sequentially.\n\nThis explains why threads performed well in Experiment 4. In contrast, Experiment 3 involved CPU-bound calculations, and Python's enabled GIL prevented multiple threads from executing Python code simultaneously. As a result, increasing the number of threads provided almost no improvement for CPU-bound work, while it significantly improved performance for I/O-bound work.","bh":"For Experiment 5, I ran `python3 procthreads.py --pause`, which started a Python process with PID 35139. I then opened a second terminal and ran:\n\n`ps -M -p 35139`\n\nThe command printed:\n\nUSER            PID   TT   %CPU STAT PRI     STIME     UTIME COMMAND\nconnorsheldon 35139 s002    0.0 S    31T   0:00.02   0:00.04 /opt/homebrew/Cellar/python@3.14/\n              35139         0.0 S    31T   0:00.00   0:00.00\n              35139         0.0 S    31T   0:00.00   0:00.00\n              35139         0.0 S    31T   0:00.00   0:00.00\n              35139         0.0 S    31T   0:00.00   0:00.00\n\nmacOS reported 5 threads, which matches the expected count of one main thread and four additional waiting threads. All five entries shared the same PID, confirming that they belonged to the same process. There were no unexpected additional threads. If the count had been higher, those threads could have come from the Python interpreter or supporting libraries.","bi":"Change: I will add 16 to WORKER_COUNTS so the program tests 1, 2, 4, 8, and 16 workers.\n\nPrediction and reason (written before running): I predict that increasing the number of threads to 16 will not significantly improve CPU-bound performance because my Python interpreter has the GIL enabled. I also predict that using 16 processes will provide little or no additional speedup compared with 8 processes because my computer has only 8 logical CPUs. The extra processes may introduce scheduling overhead and CPU contention, potentially making execution slower.\n\nChange: I added 16 to WORKER_COUNTS so the program would test 1, 2, 4, 8, and 16 workers. I marked the changed line with a `# B-i` comment.\n\nPrediction and reason (written before running): I predicted that increasing the number of threads to 16 would not significantly improve CPU-bound performance because my Python interpreter has the GIL enabled. I also predicted that 16 processes would provide little or no additional speedup compared with 8 processes because my computer has only 8 logical CPUs. The additional processes could introduce scheduling overhead and CPU contention.\n\nRelevant output:\n\ntext\nthreads    workers=8   time=  2.53 s  speedup= 1.00\nthreads    workers=16  time=  2.54 s  speedup= 1.00\nprocesses  workers=8   time=  0.60 s  speedup= 4.39\nprocesses  workers=16  time=  0.57 s  speedup= 4.59\n\n\nDid the prediction hold?: My prediction mostly held. Increasing the number of threads to 16 provided no meaningful improvement, which is consistent with the GIL limiting parallel execution of CPU-bound Python code. Using 16 processes was slightly faster than using 8 processes, improving from 0.60 seconds to 0.57 seconds. However, the improvement was small and could be explained by measurement variability or CPU scheduling differences. Since the program only has 8 tasks, the additional processes do not provide much opportunity for further parallel execution."}}</script>
+</body>
+</html>
